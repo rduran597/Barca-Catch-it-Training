@@ -11,7 +11,7 @@ public class Training {
 
     private JLabel labelTime;
 
-    private PanelJuego pantallaJuego;
+    private JPanel pantallaJuego;
 
     private JButton botonJugar;
 
@@ -25,8 +25,8 @@ public class Training {
         Training.setSize(new Dimension(800, 600));
         Training.setLayout(null);
 
-        show.PanelTitle();
-        show.PanelCenter();
+        showPanelTitle();
+        showPanelCenter();
 
         Timer timer = new Timer(1000, new TimerActionListener());
 
@@ -56,6 +56,21 @@ public class Training {
         menuPrincipal.add(labelTime);
 
 
+
+    }
+
+    private void showPanelCenter() {
+        pantallaJuego = new JPanel();
+        pantallaJuego.setLayout(null);
+        pantallaJuego.setSize(Training.getWidth(), Training.getHeight() - menuPrincipal.getHeight());
+        pantallaJuego.setBackground(Color.LIGHT_GRAY);
+
+        Training.add(pantallaJuego);
+
+        showJugador
+    }
+
+    private void showJugador() {
 
     }
 
