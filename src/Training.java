@@ -27,6 +27,10 @@ public class Training {
     private JButton botonSalir;
     private int seconds = 0;
 
+    // Crear contador para puntuar al recoger los objetos
+    private int puntuacion = 0;
+    private JLabel labelPuntos;
+
     public Training() {
         Training.setPreferredSize(new Dimension(800, 600));
         Training.setSize(new Dimension(800, 600));
@@ -45,6 +49,17 @@ public class Training {
         Training.addKeyListener(new TrainingListener());
         Training.setFocusable(true);
         Training.requestFocusInWindow();
+
+        Timer generador = new Timer(2000, e -> {
+            int azar = (int) (Math.random() * 4);
+            switch (azar) {
+                case 0 -> caerObjeto("src/images/balon.png", 30);
+                case 1 -> caerObjeto("src/images/madrid.png", -30);
+                case 2 -> caerObjeto("src/images/roja.png", -50);
+                case 3 -> caerObjeto("src/images/barca.png", 30);
+            }
+        });
+        generador.start();
     }
 
     private class TrainingListener extends KeyAdapter {
@@ -125,6 +140,10 @@ public class Training {
         buttonPause.setForeground(Color.WHITE);
         menuPrincipal.add(buttonPause);
 
+        labelPuntos = new JLabel("Puntos: 0");
+        labelPuntos.setForeground(Color.WHITE);
+        menuPrincipal.add(labelPuntos);
+
     }
 
     private void showPanelCenter() {
@@ -141,7 +160,7 @@ public class Training {
         // añadir fondo al juego
         JLabel fondo = new JLabel();
         fondo.setSize(800, 550);
-        ImageIcon imagenFondo = new ImageIcon("src/images/campNou.jpg");
+        ImageIcon imagenFondo = new ImageIcon("src/images/campoFondo.png");
         fondo.setIcon(new ImageIcon(imagenFondo.getImage().getScaledInstance(800, 550, Image.SCALE_SMOOTH)));
 
         pantallaJuego.add(fondo);
@@ -151,9 +170,51 @@ public class Training {
         Training.add(pantallaJuego);
     }
 
+    private void caerObjeto(String rutaImagen, int valorPuntos) {
+        JLabel objeto = new JLabel();
+        objeto.setSize(50, 50);
+
+
+        ImageIcon img = new ImageIcon(new ImageIcon(rutaImagen).getImage()
+                .getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+        objeto.setIcon(img);
+
+
+        int xAleatoria = (int) (Math.random() * (pantallaJuego.getWidth() - 50));
+        objeto.setLocation(xAleatoria, 0);
+
+        pantallaJuego.add(objeto);
+        pantallaJuego.setComponentZOrder(objeto, 0); // Que esté por delante del fondo
+
+
+        Timer animacionCaida = new Timer(20, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                objeto.setLocation(objeto.getX(), objeto.getY() + 5); // Cae 5 píxeles cada vez
+
+                // --- LÓGICA DE COLISIÓN (Si toca a Pedri) ---
+                if (objeto.getBounds().intersects(labelPlayer.getBounds())) {
+                    puntuacion += valorPuntos; // Suma o resta
+                    labelPuntos.setText("Puntos: " + puntuacion);
+
+                    ((Timer)e.getSource()).stop(); // Para el timer
+                    pantallaJuego.remove(objeto); // Borra el objeto
+                    pantallaJuego.repaint();      // Refresca la pantalla
+                }
+
+                if (objeto.getY() > pantallaJuego.getHeight()) {
+                    ((Timer)e.getSource()).stop();
+                    pantallaJuego.remove(objeto);
+                    pantallaJuego.repaint();
+                }
+            }
+        });
+        animacionCaida.start();
+    }
+
     private void showJugador() {
         labelPlayer = new JLabel();
-        labelPlayer.setSize(90, 100);
+        labelPlayer.setSize(120, 150);
         iconDer = new ImageIcon (new ImageIcon("src/images/pedri.png").getImage()
                 .getScaledInstance(labelPlayer.getWidth(), labelPlayer.getHeight(), Image.SCALE_SMOOTH));
         labelPlayer.setIcon(iconDer);
@@ -163,7 +224,7 @@ public class Training {
                 getScaledInstance(labelPlayer.getWidth(), labelPlayer.getHeight(), Image.SCALE_SMOOTH));
 
         labelPlayer.setIcon(iconDer);
-        labelPlayer.setLocation(pantallaJuego.getWidth() / 2 - 45, pantallaJuego.getHeight() -100);
+        labelPlayer.setLocation(pantallaJuego.getWidth() / 2 - 45, pantallaJuego.getHeight() -180);
         pantallaJuego.add(labelPlayer);
     }
 
@@ -228,7 +289,13 @@ public class Training {
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Training");
+        String nombreUsuario = JOptionPane.showInputDialog("Introduce tu nombre de usuario:");
+        if (nombreUsuario == null) {
+            nombreUsuario = "Invitado";
+        }
+
+        JFrame frame = new JFrame("Training - Jugador: " + nombreUsuario);
+
         frame.setContentPane(new Training().Training);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
