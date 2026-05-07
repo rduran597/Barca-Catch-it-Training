@@ -29,6 +29,9 @@ public class Training {
 
     // Crear contador para puntuar al recoger los objetos
     private int puntuacion = 0;
+    private int vidas = 3;
+    private final int META_PUNTOS = 1000; // Puntos necesarios para ganar
+    private JLabel labelvidas;
     private JLabel labelPuntos;
 
     public Training() {
@@ -144,6 +147,10 @@ public class Training {
         labelPuntos.setForeground(Color.WHITE);
         menuPrincipal.add(labelPuntos);
 
+        labelvidas = new JLabel("Vidas: " + vidas);
+        labelvidas.setForeground(Color.RED);
+        labelvidas.setFont(new Font("Arial", Font.BOLD, 14));
+        menuPrincipal.add(labelvidas);
     }
 
     private void showPanelCenter() {
@@ -184,22 +191,37 @@ public class Training {
         objeto.setLocation(xAleatoria, 0);
 
         pantallaJuego.add(objeto);
-        pantallaJuego.setComponentZOrder(objeto, 0); // Que esté por delante del fondo
+        pantallaJuego.setComponentZOrder(objeto, 0);
 
 
         Timer animacionCaida = new Timer(20, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                objeto.setLocation(objeto.getX(), objeto.getY() + 5); // Cae 5 píxeles cada vez
+                objeto.setLocation(objeto.getX(), objeto.getY() + 5);
 
-                // --- LÓGICA DE COLISIÓN (Si toca a Pedri) ---
+                if (valorPuntos > 0) {
+                    puntuacion += valorPuntos;
+                } else {
+                    puntuacion += valorPuntos; // Resta puntos si es negativo
+                    vidas--; // Pierde una vida
+                }
+
+                labelPuntos.setText("Puntos: " + puntuacion);
+                labelvidas.setText("Vidas: " + vidas);
+
+                if (vidas <= 0) {
+                    finalizarJuego("¡Has perdido! Has agotado todas tus vidas.");
+                } else if (puntuacion >= META_PUNTOS) {
+                    finalizarJuego("¡Felicidades! Has alcanzado la meta de puntos.");
+                }
+
                 if (objeto.getBounds().intersects(labelPlayer.getBounds())) {
-                    puntuacion += valorPuntos; // Suma o resta
+                    puntuacion += valorPuntos;
                     labelPuntos.setText("Puntos: " + puntuacion);
 
-                    ((Timer)e.getSource()).stop(); // Para el timer
-                    pantallaJuego.remove(objeto); // Borra el objeto
-                    pantallaJuego.repaint();      // Refresca la pantalla
+                    ((Timer)e.getSource()).stop();
+                    pantallaJuego.remove(objeto);
+                    pantallaJuego.repaint();
                 }
 
                 if (objeto.getY() > pantallaJuego.getHeight()) {
@@ -210,6 +232,13 @@ public class Training {
             }
         });
         animacionCaida.start();
+    }
+
+    private void finalizarJuego(String mensaje) {
+        JOptionPane.showMessageDialog(null, mensaje + "puntuación: " + puntuacion);
+
+        // guardarMYSQL(); // Esto es para guardar la puntuación en la base de datos MySQL, aunque no se ha implementado en este código
+        System.exit(0);
     }
 
     private void showJugador() {
