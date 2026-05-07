@@ -12,6 +12,8 @@ public class Training {
 
     private JLabel labelTime;
 
+    private boolean juegoActivo = true;
+
     private JLabel labelPlayer;
 
     private JPanel pantallaJuego;
@@ -26,6 +28,9 @@ public class Training {
 
     private JButton botonSalir;
     private int seconds = 0;
+
+    private Timer generador;
+    private Timer animacionCaida;
 
     // Crear contador para puntuar al recoger los objetos
     private int puntuacion = 0;
@@ -53,7 +58,7 @@ public class Training {
         Training.setFocusable(true);
         Training.requestFocusInWindow();
 
-        Timer generador = new Timer(2000, e -> {
+        generador = new Timer(2000, e -> {
             int azar = (int) (Math.random() * 4);
             switch (azar) {
                 case 0 -> caerObjeto("src/images/balon.png", 30);
@@ -194,34 +199,43 @@ public class Training {
         pantallaJuego.setComponentZOrder(objeto, 0);
 
 
-        Timer animacionCaida = new Timer(20, new ActionListener() {
+        animacionCaida = new Timer(20, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
+                if (!juegoActivo) {
+                    ((Timer)e.getSource()).stop();
+                    return;
+                }
                 objeto.setLocation(objeto.getX(), objeto.getY() + 5);
 
-                if (valorPuntos > 0) {
-                    puntuacion += valorPuntos;
-                } else {
-                    puntuacion += valorPuntos; // Resta puntos si es negativo
-                    vidas--; // Pierde una vida
-                }
 
-                labelPuntos.setText("Puntos: " + puntuacion);
-                labelvidas.setText("Vidas: " + vidas);
-
-                if (vidas <= 0) {
-                    finalizarJuego("¡Has perdido! Has agotado todas tus vidas.");
-                } else if (puntuacion >= META_PUNTOS) {
-                    finalizarJuego("¡Felicidades! Has alcanzado la meta de puntos.");
-                }
 
                 if (objeto.getBounds().intersects(labelPlayer.getBounds())) {
-                    puntuacion += valorPuntos;
+
+                    if (valorPuntos > 0) {
+                        puntuacion += valorPuntos;
+                    } else {
+                        puntuacion += valorPuntos; // Resta puntos si es negativo
+                        vidas--; // Pierde una vida
+                    }
+
                     labelPuntos.setText("Puntos: " + puntuacion);
+                    labelvidas.setText("Vidas: " + vidas);
 
                     ((Timer)e.getSource()).stop();
                     pantallaJuego.remove(objeto);
                     pantallaJuego.repaint();
+
+                    if (vidas <= 0) {
+                        finalizarJuego("¡Has perdido! Has agotado todas tus vidas.");
+                        animacionCaida.stop();
+                        generador.stop();
+                    } else if (puntuacion >= META_PUNTOS) {
+                        finalizarJuego("¡Felicidades! Has alcanzado la meta de puntos.");
+                        generador.stop();
+                        animacionCaida.stop();
+                    }
                 }
 
                 if (objeto.getY() > pantallaJuego.getHeight()) {
@@ -235,6 +249,7 @@ public class Training {
     }
 
     private void finalizarJuego(String mensaje) {
+        generador.stop();
         JOptionPane.showMessageDialog(null, mensaje + "puntuación: " + puntuacion);
 
         // guardarMYSQL(); // Esto es para guardar la puntuación en la base de datos MySQL, aunque no se ha implementado en este código
