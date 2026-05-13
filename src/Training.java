@@ -1,6 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class Training {
 
@@ -39,7 +43,11 @@ public class Training {
     private JLabel labelvidas;
     private JLabel labelPuntos;
 
-    public Training() {
+    private String nombreActual;
+
+    public Training(String nombre) {
+        this.nombreActual = nombre;
+
         Training.setPreferredSize(new Dimension(800, 600));
         Training.setSize(new Dimension(800, 600));
         Training.setLayout(null);
@@ -252,8 +260,36 @@ public class Training {
         generador.stop();
         JOptionPane.showMessageDialog(null, mensaje + "puntuación: " + puntuacion);
 
-        // guardarMYSQL(); // Esto es para guardar la puntuación en la base de datos MySQL, aunque no se ha implementado en este código
+        guardarPuntuacion(this.nombreActual, this.puntuacion, this.seconds, this.vidas);
         System.exit(0);
+    }
+
+    private void guardarPuntuacion(String nombre, int puntos, int segundos, int vidasRestantes) {
+        // datos de conexion
+        String url = "jdbc:mysql://localhost:3306/barca_catch_it";
+        String user = "root";
+        String pass = "1234"; // Pon tu contraseña si tienes una
+
+        // consulta SQL
+        String sql = "INSERT INTO ranking (nombre, puntuacion, tiempo_segundos, vidas_finales) VALUES (?, ?, ?, ?)";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement pst = con.prepareStatement(sql)) {
+
+            // rellenar los "?" con los datos reales
+            pst.setString(1, nombre);
+            pst.setInt(2, puntos);
+            pst.setInt(3, segundos);
+            pst.setInt(4, vidasRestantes);
+
+            // ejecutar
+            pst.executeUpdate();
+            System.out.println("Puntuación guardada en la DB.");
+
+        } catch (SQLException e) {
+            System.err.println("Error al guardar: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos.");
+        }
     }
 
     private void showJugador() {
@@ -340,7 +376,8 @@ public class Training {
 
         JFrame frame = new JFrame("Training - Jugador: " + nombreUsuario);
 
-        frame.setContentPane(new Training().Training);
+        frame.setContentPane(new Training(nombreUsuario).Training);
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
@@ -355,10 +392,6 @@ public class Training {
 
         frame.addWindowListener(new FrameWindowsListener(frame));
 
-
-
     }
 
 }
-
-
