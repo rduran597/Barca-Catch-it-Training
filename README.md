@@ -9,8 +9,8 @@ ANTES DE EJECUTAR EL PROGRAMA
 4 - ASEGÚRATE DE TENER CONFIGURADO MYSQL CON:
 - Usuario: root
 - Contraseña: 1234
-- Base de datos: barcacatchit
-- 
+- Base de datos: barca_catch_it
+
 5 - ¡Disfruta!
 
 
