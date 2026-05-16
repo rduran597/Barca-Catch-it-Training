@@ -22,10 +22,6 @@ public class Training {
 
     private JPanel pantallaJuego;
 
-    private JButton botonJugar;
-
-    private JButton botonRanking;
-
     private Icon iconDer;
     private Icon iconIzq;
     private boolean saltando = false;
@@ -268,7 +264,7 @@ public class Training {
         // datos de conexion
         String url = "jdbc:mysql://localhost:3306/barca_catch_it";
         String user = "root";
-        String pass = "1234"; // Pon tu contraseña si tienes una
+        String pass = "1234";
 
         // consulta SQL
         String sql = "INSERT INTO ranking (nombre, puntuacion, tiempo_segundos, vidas_finales) VALUES (?, ?, ?, ?)";

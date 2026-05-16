@@ -1,3 +1,4 @@
+CREATE DATABASE IF NOT EXISTS barca_catch_it;
 USE barca_catch_it;
 
 DROP TABLE IF EXISTS ranking;
@@ -11,4 +12,4 @@ CREATE TABLE ranking (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-select * from ranking;
+SELECT * FROM ranking;
