@@ -7,40 +7,39 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class Training {
-
+    //region VARIABLES UI
     private JPanel Training;
-    // menu principal del juego, con opciones para jugar, ver el ranking y salir
-    private JPanel menuPrincipal;
+    private JPanel pantallaJuego;
 
     private JButton buttonPause;
 
     private JLabel labelTime;
-
-    private boolean juegoActivo = true;
-
     private JLabel labelPlayer;
-
-    private JPanel pantallaJuego;
-
-    private Icon iconDer;
-    private Icon iconIzq;
-    private boolean saltando = false;
-
-    private JButton botonSalir;
-    private int seconds = 0;
-
-    private Timer generador;
-    private Timer animacionCaida;
-
-    // Crear contador para puntuar al recoger los objetos
-    private int puntuacion = 0;
-    private int vidas = 3;
-    private final int META_PUNTOS = 1000; // Puntos necesarios para ganar
     private JLabel labelvidas;
     private JLabel labelPuntos;
 
-    private String nombreActual;
+    private Icon iconDer;
+    private Icon iconIzq;
+    //endregion
+    //region VARIABLES JUEGO
+    private final boolean juegoActivo = true;
+    private boolean saltando = false;
 
+    private int seconds = 0;
+    private int puntuacion = 0;
+    private int vidas = 3;
+
+    private final int META_PUNTOS = 1000; // Puntos necesarios para ganar
+    //endregion
+    //region TIMERS
+    private final Timer generador;
+    private Timer animacionCaida;
+    //endregion
+    //region DATOS JUGADOR
+    private final String nombreActual;
+    //endregion
+
+    //region INICIALIZACION DEL JUEGO
     public Training(String nombre) {
         this.nombreActual = nombre;
 
@@ -73,7 +72,9 @@ public class Training {
         });
         generador.start();
     }
+    //endregion
 
+    //region INPUT TECLADO
     private class TrainingListener extends KeyAdapter {
 
         @Override
@@ -89,20 +90,22 @@ public class Training {
                 }
                 case KeyEvent.VK_LEFT -> {
                     x -= 20;
-                labelPlayer.setIcon(iconIzq);
+                    labelPlayer.setIcon(iconIzq);
                 }
-                case KeyEvent.VK_SPACE -> saltar();
-                case KeyEvent.VK_UP -> saltar();
+                case KeyEvent.VK_SPACE, KeyEvent.VK_UP -> saltar();
             }
 
-            if (x>=0 && x <= pantallaJuego.getWidth() - labelPlayer.getWidth()) {
+            if (x >= 0 && x <= pantallaJuego.getWidth() - labelPlayer.getWidth()) {
                 labelPlayer.setLocation(x, labelPlayer.getY());
             }
         }
     }
+    //endregion
+
+    //region PAUSA
     private class ButtonPauseListener extends MouseAdapter {
 
-        Timer timer;
+        private final Timer timer;
 
         public ButtonPauseListener(Timer timer) {
             this.timer = timer;
@@ -121,7 +124,9 @@ public class Training {
 
         }
     }
+    //endregion
 
+    //region TIMER TIEMPO
     public class TimerActionListener implements ActionListener {
 
         @Override
@@ -130,10 +135,13 @@ public class Training {
             labelTime.setText(seconds + " segundos");
         }
     }
+    //endregion
 
+    //region PANEL SUPERIOR
     private void showPanelTitle() {
         //panelTitle
-        menuPrincipal = new JPanel();
+        // menu principal del juego, con opciones para jugar, ver el ranking y salir
+        JPanel menuPrincipal = new JPanel();
         menuPrincipal.setLocation(0, 0);
         menuPrincipal.setSize(Training.getWidth(), 50);
         menuPrincipal.setBackground(Color.GRAY);
@@ -148,7 +156,7 @@ public class Training {
         buttonPause = new JButton();
         buttonPause.setText("Pausar");
         buttonPause.setFocusPainted(false);
-        buttonPause.setBackground(new Color (25, 18, 50));
+        buttonPause.setBackground(new Color(25, 18, 50));
         buttonPause.setForeground(Color.WHITE);
         menuPrincipal.add(buttonPause);
 
@@ -161,7 +169,9 @@ public class Training {
         labelvidas.setFont(new Font("Arial", Font.BOLD, 14));
         menuPrincipal.add(labelvidas);
     }
+    //endregion
 
+    //region PANEL DEL JUEGO
     private void showPanelCenter() {
         //panelCenter
         pantallaJuego = new JPanel();
@@ -185,7 +195,27 @@ public class Training {
 
         Training.add(pantallaJuego);
     }
+    //endregion
 
+    //region JUGADOR
+    private void showJugador() {
+        labelPlayer = new JLabel();
+        labelPlayer.setSize(120, 150);
+        iconDer = new ImageIcon(new ImageIcon("src/images/pedri.png").getImage()
+                .getScaledInstance(labelPlayer.getWidth(), labelPlayer.getHeight(), Image.SCALE_SMOOTH));
+        labelPlayer.setIcon(iconDer);
+        labelPlayer.setLocation(pantallaJuego.getWidth() / 2 - labelPlayer.getWidth() / 2, pantallaJuego.getHeight() - labelPlayer.getHeight());
+
+        iconIzq = new ImageIcon(new ImageIcon("src/images/pedriReversa.png").getImage().
+                getScaledInstance(labelPlayer.getWidth(), labelPlayer.getHeight(), Image.SCALE_SMOOTH));
+
+        labelPlayer.setIcon(iconDer);
+        labelPlayer.setLocation(pantallaJuego.getWidth() / 2 - 45, pantallaJuego.getHeight() - 180);
+        pantallaJuego.add(labelPlayer);
+    }
+    //endregion
+
+    //region OBJETOS QUE CAEN
     private void caerObjeto(String rutaImagen, int valorPuntos) {
         JLabel objeto = new JLabel();
         objeto.setSize(50, 50);
@@ -203,107 +233,53 @@ public class Training {
         pantallaJuego.setComponentZOrder(objeto, 0);
 
 
-        animacionCaida = new Timer(20, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        animacionCaida = new Timer(20, e -> {
 
-                if (!juegoActivo) {
-                    ((Timer)e.getSource()).stop();
-                    return;
-                }
-                objeto.setLocation(objeto.getX(), objeto.getY() + 5);
+            if (!juegoActivo) {
+                ((Timer) e.getSource()).stop();
+                return;
+            }
+            objeto.setLocation(objeto.getX(), objeto.getY() + 5);
 
 
+            if (objeto.getBounds().intersects(labelPlayer.getBounds())) {
 
-                if (objeto.getBounds().intersects(labelPlayer.getBounds())) {
-
-                    if (valorPuntos > 0) {
-                        puntuacion += valorPuntos;
-                    } else {
-                        puntuacion += valorPuntos; // Resta puntos si es negativo
-                        vidas--; // Pierde una vida
-                    }
-
-                    labelPuntos.setText("Puntos: " + puntuacion);
-                    labelvidas.setText("Vidas: " + vidas);
-
-                    ((Timer)e.getSource()).stop();
-                    pantallaJuego.remove(objeto);
-                    pantallaJuego.repaint();
-
-                    if (vidas <= 0) {
-                        finalizarJuego("¡Has perdido! Has agotado todas tus vidas.");
-                        animacionCaida.stop();
-                        generador.stop();
-                    } else if (puntuacion >= META_PUNTOS) {
-                        finalizarJuego("¡Felicidades! Has alcanzado la meta de puntos.");
-                        generador.stop();
-                        animacionCaida.stop();
-                    }
+                if (valorPuntos > 0) {
+                    puntuacion += valorPuntos;
+                } else {
+                    puntuacion += valorPuntos; // Resta puntos si es negativo
+                    vidas--; // Pierde una vida
                 }
 
-                if (objeto.getY() > pantallaJuego.getHeight()) {
-                    ((Timer)e.getSource()).stop();
-                    pantallaJuego.remove(objeto);
-                    pantallaJuego.repaint();
+                labelPuntos.setText("Puntos: " + puntuacion);
+                labelvidas.setText("Vidas: " + vidas);
+
+                ((Timer) e.getSource()).stop();
+                pantallaJuego.remove(objeto);
+                pantallaJuego.repaint();
+
+                if (vidas <= 0) {
+                    finalizarJuego("¡Has perdido! Has agotado todas tus vidas.");
+                    animacionCaida.stop();
+                    generador.stop();
+                } else if (puntuacion >= META_PUNTOS) {
+                    finalizarJuego("¡Felicidades! Has alcanzado la meta de puntos.");
+                    generador.stop();
+                    animacionCaida.stop();
                 }
+            }
+
+            if (objeto.getY() > pantallaJuego.getHeight()) {
+                ((Timer) e.getSource()).stop();
+                pantallaJuego.remove(objeto);
+                pantallaJuego.repaint();
             }
         });
         animacionCaida.start();
     }
+    //endregion
 
-    private void finalizarJuego(String mensaje) {
-        generador.stop();
-        JOptionPane.showMessageDialog(null, mensaje + "puntuación: " + puntuacion);
-
-        guardarPuntuacion(this.nombreActual, this.puntuacion, this.seconds, this.vidas);
-        System.exit(0);
-    }
-
-    private void guardarPuntuacion(String nombre, int puntos, int segundos, int vidasRestantes) {
-        // datos de conexion
-        String url = "jdbc:mysql://localhost:3306/barca_catch_it";
-        String user = "root";
-        String pass = "1234";
-
-        // consulta SQL
-        String sql = "INSERT INTO ranking (nombre, puntuacion, tiempo_segundos, vidas_finales) VALUES (?, ?, ?, ?)";
-
-        try (Connection con = DriverManager.getConnection(url, user, pass);
-             PreparedStatement pst = con.prepareStatement(sql)) {
-
-            // rellenar los "?" con los datos reales
-            pst.setString(1, nombre);
-            pst.setInt(2, puntos);
-            pst.setInt(3, segundos);
-            pst.setInt(4, vidasRestantes);
-
-            // ejecutar
-            pst.executeUpdate();
-            System.out.println("Puntuación guardada en la DB.");
-
-        } catch (SQLException e) {
-            System.err.println("Error al guardar: " + e.getMessage());
-            JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos.");
-        }
-    }
-
-    private void showJugador() {
-        labelPlayer = new JLabel();
-        labelPlayer.setSize(120, 150);
-        iconDer = new ImageIcon (new ImageIcon("src/images/pedri.png").getImage()
-                .getScaledInstance(labelPlayer.getWidth(), labelPlayer.getHeight(), Image.SCALE_SMOOTH));
-        labelPlayer.setIcon(iconDer);
-        labelPlayer.setLocation(pantallaJuego.getWidth() / 2 - labelPlayer.getWidth() / 2, pantallaJuego.getHeight()  - labelPlayer.getHeight());
-
-        iconIzq = new ImageIcon (new ImageIcon("src/images/pedriReversa.png").getImage().
-                getScaledInstance(labelPlayer.getWidth(), labelPlayer.getHeight(), Image.SCALE_SMOOTH));
-
-        labelPlayer.setIcon(iconDer);
-        labelPlayer.setLocation(pantallaJuego.getWidth() / 2 - 45, pantallaJuego.getHeight() -180);
-        pantallaJuego.add(labelPlayer);
-    }
-
+    //region SALTO
     private void saltar() {
         if (saltando) return;
         saltando = true;
@@ -331,15 +307,31 @@ public class Training {
 
                 }
             }
-            });
+        });
 
         Aire.start();
     }
+    //endregion
+
+    //region FIN DEL JUEGO + BASE DE DATOS
+
+    private void finalizarJuego(String mensaje) {
+        generador.stop();
+        JOptionPane.showMessageDialog(null, mensaje + "puntuación: " + puntuacion);
+
+        BBDD guardarDatos = new BBDD();
+        guardarDatos.guardarPuntuacion(nombreActual, puntuacion, seconds, vidas);
+
+        System.exit(0);
+    }
 
 
+    //endregion
+
+    //region CONTROL DE CIERRE DE VENTANA
     private static class FrameWindowsListener extends WindowAdapter {
 
-        JFrame frame;
+        final JFrame frame;
 
         public FrameWindowsListener(JFrame frame) {
             this.frame = frame;
@@ -359,10 +351,43 @@ public class Training {
                 frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             } else {
                 frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        }
+            }
 
         }
     }
+    //endregion
+
+    public class BBDD  {
+        private void guardarPuntuacion(String nombre, int puntos, int segundos, int vidasRestantes) {
+            // datos de conexion
+            String url = "jdbc:mysql://localhost:3306/barca_catch_it";
+            String user = "root";
+            String pass = "1234";
+
+            // consulta SQL
+            String sql = "INSERT INTO ranking (nombre, puntuacion, tiempo_segundos, vidas_finales) VALUES (?, ?, ?, ?)";
+
+            try (Connection con = DriverManager.getConnection(url, user, pass);
+                 PreparedStatement pst = con.prepareStatement(sql)) {
+
+                // rellenar los "?" con los datos reales
+                pst.setString(1, nombre);
+                pst.setInt(2, puntos);
+                pst.setInt(3, segundos);
+                pst.setInt(4, vidasRestantes);
+
+                // ejecutar
+                pst.executeUpdate();
+                System.out.println("Puntuación guardada en la DB.");
+
+            } catch (SQLException e) {
+                System.err.println("Error al guardar: " + e.getMessage());
+                JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos.");
+            }
+        }
+    }
+
+    //region MAIN
 
     public static void main(String[] args) {
         String nombreUsuario = JOptionPane.showInputDialog("Introduce tu nombre de usuario:");
@@ -389,5 +414,5 @@ public class Training {
         frame.addWindowListener(new FrameWindowsListener(frame));
 
     }
-
+    //endregion
 }
