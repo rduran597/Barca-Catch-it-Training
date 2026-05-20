@@ -60,6 +60,7 @@ CREATE TABLE ranking (
     puntuacion INT,
     tiempo_segundos INT,
     vidas_finales INT
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
