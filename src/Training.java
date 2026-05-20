@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.ResultSet;
 
 public class Training {
     //region VARIABLES UI
@@ -313,19 +314,33 @@ public class Training {
     }
     //endregion
 
-    //region FIN DEL JUEGO + BASE DE DATOS
+    //region FIN DEL JUEGO
 
     private void finalizarJuego(String mensaje) {
         generador.stop();
-        JOptionPane.showMessageDialog(null, mensaje + "puntuación: " + puntuacion);
 
         BBDD guardarDatos = new BBDD();
         guardarDatos.guardarPuntuacion(nombreActual, puntuacion, seconds, vidas);
 
-        System.exit(0);
+        String[] opciones = {"Ver Ranking", "Salir"};
+
+        int eleccion = JOptionPane.showOptionDialog(
+                null,
+                mensaje + "\nPuntuación: " + puntuacion,
+                "Fin del juego",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                opciones,
+                opciones[0]
+        );
+
+        if (eleccion == 0) {
+            guardarDatos.mostrarRanking();
+        } else {
+            System.exit(0);
+        }
     }
-
-
     //endregion
 
     //region CONTROL DE CIERRE DE VENTANA
@@ -357,17 +372,25 @@ public class Training {
     }
     //endregion
 
+    //region BASE DE DATOS
     public class BBDD  {
-        private void guardarPuntuacion(String nombre, int puntos, int segundos, int vidasRestantes) {
+        private Connection conectar() throws SQLException {
             // datos de conexion
             String url = "jdbc:mysql://localhost:3306/barca_catch_it";
+
             String user = "root";
             String pass = "1234";
+
+            return DriverManager.getConnection(url, user, pass);
+        }
+
+        private void guardarPuntuacion(String nombre, int puntos, int segundos, int vidasRestantes) {
+
 
             // consulta SQL
             String sql = "INSERT INTO ranking (nombre, puntuacion, tiempo_segundos, vidas_finales) VALUES (?, ?, ?, ?)";
 
-            try (Connection con = DriverManager.getConnection(url, user, pass);
+            try (Connection con = conectar();
                  PreparedStatement pst = con.prepareStatement(sql)) {
 
                 // rellenar los "?" con los datos reales
@@ -385,7 +408,54 @@ public class Training {
                 JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos.");
             }
         }
+
+        private void mostrarRanking() {
+
+            JFrame frameRanking = new JFrame("Ranking");
+            frameRanking.setSize(400, 300);
+
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+
+            JTextArea areaRanking = new JTextArea();
+            areaRanking.setEditable(false);
+
+            JScrollPane scrollRanking = new JScrollPane(areaRanking);
+
+            panel.add(scrollRanking, BorderLayout.CENTER);
+
+            frameRanking.add(panel);
+            frameRanking.setLocationRelativeTo(null);
+            frameRanking.setVisible(true);
+
+            String sql = "SELECT nombre, puntuacion, tiempo_segundos, vidas_finales FROM ranking ORDER BY puntuacion DESC LIMIT 10";
+
+            try (Connection con = conectar();
+                 PreparedStatement pst = con.prepareStatement(sql);
+                 ResultSet rs = pst.executeQuery()) {
+
+                areaRanking.append("===== TOP 10 =====");
+
+                int posicion = 1;
+
+                while (rs.next()) {
+
+                    areaRanking.append(
+                            posicion + ". " + rs.getString("nombre") + " - " +
+                            rs.getInt("puntuacion") + " puntos, " +
+                            rs.getInt("tiempo_segundos") + "s, " +
+                            rs.getInt("vidas_finales") + " vidas restantes\n"
+                    );
+                    posicion++;
+                }
+
+            } catch (SQLException e) {
+
+                System.err.println("Error al mostrar ranking: " + e.getMessage());
+            }
+        }
     }
+    //endregion
 
     //region MAIN
 
