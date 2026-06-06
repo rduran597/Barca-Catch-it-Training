@@ -412,7 +412,7 @@ public class Training {
         private void mostrarRanking() {
 
             JFrame frameRanking = new JFrame("Ranking");
-            frameRanking.setSize(400, 300);
+            frameRanking.setSize(450, 300);
 
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
@@ -420,6 +420,7 @@ public class Training {
             JTextArea areaRanking = new JTextArea();
             areaRanking.setEditable(false);
 
+            areaRanking.setFont(new Font("Monospaced", Font.PLAIN, 13));
             JScrollPane scrollRanking = new JScrollPane(areaRanking);
 
             panel.add(scrollRanking, BorderLayout.CENTER);
@@ -434,7 +435,7 @@ public class Training {
                  PreparedStatement pst = con.prepareStatement(sql);
                  ResultSet rs = pst.executeQuery()) {
 
-                areaRanking.append("===== TOP 10 =====");
+                areaRanking.append("===== TOP 10 =====\n");
 
                 int posicion = 1;
 
